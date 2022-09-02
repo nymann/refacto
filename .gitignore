@@ -23,3 +23,5 @@ coverage.xml
 htmlcov
 .idea
 .cache/
+.eggs/
+dist/
