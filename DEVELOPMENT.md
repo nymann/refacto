@@ -1,3 +1,12 @@
+## Starting it in Neovim
+```sh
+# start refacto
+refacto --port=13302
+```
+```lua
+lua vim.lsp.start({name="refacto", cmd=vim.lsp.rpc.connect("127.0.0.1", 13302)})
+```
+
 ### Cross platform development
 
 By installing `make` you can do the following:
