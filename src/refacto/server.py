@@ -13,10 +13,10 @@ from pygls.lsp.types import CompletionParams
 from pygls.lsp.types import InsertTextMode
 from pygls.server import LanguageServer
 
-server = LanguageServer()
+refacto_server = LanguageServer()
 
 
-@server.feature(
+@refacto_server.feature(
     COMPLETION,
     CompletionOptions(
         trigger_characters=[","],
@@ -25,7 +25,7 @@ server = LanguageServer()
         resolve_provider=None,
     ),
 )
-def completions(server: LanguageServer, params: CompletionParams):
+def completions(server: LanguageServer, completion_params: CompletionParams) -> CompletionList:
     server.show_message_log(message="Refacto: Completion")
     return CompletionList(
         is_incomplete=False,
@@ -53,7 +53,7 @@ def completions(server: LanguageServer, params: CompletionParams):
     )
 
 
-@server.feature(
+@refacto_server.feature(
     CODE_ACTION,
     CodeActionOptions(
         code_action_kinds=[CodeActionKind.Refactor],
@@ -61,9 +61,10 @@ def completions(server: LanguageServer, params: CompletionParams):
         resolve_provider=True,
     ),
 )
-def code_action(server: LanguageServer, params: CodeActionParams) -> Optional[list[CodeAction]]:
+def code_action(server: LanguageServer, code_action_params: CodeActionParams) -> Optional[list[CodeAction]]:
     server.show_message_log(message="Refacto: Code Action")
-    document = server.workspace.get_document(params.text_document.uri)
+    document = server.workspace.get_document(code_action_params.text_document.uri)
+    server.show_message(document)
     code_actions = []
     test = CodeAction(
         title="Testing",
@@ -75,6 +76,5 @@ def code_action(server: LanguageServer, params: CodeActionParams) -> Optional[li
         command=None,
         data=None,
     )
-    server.workspace
     code_actions.append(test)
     return code_actions
