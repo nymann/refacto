@@ -9,7 +9,7 @@ tags
 pytest_runner-5.3.1-py3.9.egg
 README.txt
 
-src/refacto.egg-info:
+src/py_refacto.egg-info/
 dependency_links.txt
 entry_points.txt
 PKG-INFO
