@@ -14,5 +14,10 @@ def tcp(host: str = Host, port: int = Port) -> None:
     refacto_server.start_tcp(host=host, port=port)  # type: ignore
 
 
+@app.command()
+def stdio() -> None:
+    refacto_server.start_io()  # type: ignore
+
+
 if __name__ == "__main__":
     app()
