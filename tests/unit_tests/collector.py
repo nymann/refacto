@@ -46,7 +46,7 @@ def collect_test_cases() -> Iterable[TestCase]:
         for test_case_dir in refactoring_method_dir.iterdir():
             if not test_case_dir.is_dir():
                 continue
-            if test_case_dir.name != "simplest":
+            if test_case_dir.name == "module_method":
                 continue
             before = test_case_dir.joinpath("before.py")
             after = test_case_dir.joinpath("after.py")
