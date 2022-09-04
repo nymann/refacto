@@ -20,10 +20,10 @@ class TestCase:
         self,
         before: Path | str,
         expected: Path | str,
-        range: Range,
+        selected_range: Range,
         refactoring_method: Callable[[Range, str], str],
     ) -> None:
-        self.range = range
+        self.range = selected_range
         self.before: str = self.read_file(path=before)
         self.expected: str = self.read_file(path=expected)
         self.refactoring_method = refactoring_method
@@ -38,7 +38,7 @@ class TestCase:
         return self.refactoring_method(self.range, self.before)
 
 
-def collect_test_cases() -> Iterable[TestCase]:
+def collect_test_cases() -> Iterable[TestCase]:  # noqa: WPS231
     test_cases: list[TestCase] = []
     for refactoring_method_dir in root_test_cases_directory.iterdir():
         if not refactoring_method_dir.is_dir():
@@ -50,16 +50,16 @@ def collect_test_cases() -> Iterable[TestCase]:
                 continue
             before = test_case_dir.joinpath("before.py")
             after = test_case_dir.joinpath("after.py")
-            range: dict[str, Range] = {}
+            selected_range: dict[str, Range] = {}
             range_path = test_case_dir.joinpath("range.py")
             with open(range_path) as range_file:
-                exec(range_file.read(), range)
+                exec(range_file.read(), selected_range)
             refactoring_method = refactorin_methods[refactoring_method_dir.name]
             test_cases.append(
                 TestCase(
                     before=before,
                     expected=after,
-                    range=range["range"],
+                    selected_range=selected_range["range"],
                     refactoring_method=refactoring_method,
                 ),
             )
