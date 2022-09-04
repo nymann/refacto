@@ -1,6 +1,5 @@
 from typing import Optional
 
-from devtools import debug
 import libcst
 from pygls.lsp.types.basic_structures import Range
 
@@ -60,7 +59,6 @@ class ExpressionFinder(libcst.CSTVisitor):
 
 def extract_variable(selected_range: Range, source: str) -> str:
     range_tree = libcst.parse_module(get_chars_in_range(selected_range=selected_range, source=source))
-    debug(range_tree)
     visitor = ExpressionFinder()
     range_tree.visit(visitor=visitor)
     if visitor.node is None or visitor.expr is None:
