@@ -12,6 +12,7 @@ class ExtractVariableTransformer(libcst.CSTTransformer):
         self.expr: libcst.Expr = expr
         self.variable_name = libcst.Name(variable_name)
         self.extract_next_statement_line = False
+        self.extraced_once: bool = False
 
     def leave_Expr(self, original_node: libcst.Expr, updated_node: libcst.Expr) -> libcst.Expr | libcst.RemovalSentinel:
         if self.expr.deep_equals(original_node):
@@ -33,12 +34,13 @@ class ExtractVariableTransformer(libcst.CSTTransformer):
         original_node: libcst.SimpleStatementLine,
         updated_node: libcst.SimpleStatementLine,
     ) -> libcst.FlattenSentinel | libcst.SimpleStatementLine:
-        if not self.extract_next_statement_line:
+        if not self.extract_next_statement_line or self.extraced_once:
             return updated_node
         target = libcst.AssignTarget(self.variable_name)
         assigned_variable = libcst.Assign(targets=[target], value=self.node)
         extracted_statement = libcst.SimpleStatementLine(body=[assigned_variable])
         self.extract_next_statement_line = False
+        self.extraced_once = True
         return libcst.FlattenSentinel([extracted_statement, updated_node])
 
 
