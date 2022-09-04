@@ -1,5 +1,6 @@
 [tool.black]
 line-length = 120
+exclude = "tests/test_cases/"
 
 [tool.nitpick]
 style = "https://raw.githubusercontent.com/nymann/python-styleguide/master/styles/nitpick-style.toml"
