@@ -1,5 +1,6 @@
 from typing import Optional
 
+from devtools import debug
 import libcst
 from pygls.lsp.types.basic_structures import Range
 
@@ -7,16 +8,22 @@ from refacto.refactorings.refactoring_utilities import get_chars_in_range
 
 
 class ExtractVariableTransformer(libcst.CSTTransformer):
-    def __init__(self, node: libcst.BinaryOperation, variable_name: str) -> None:
+    def __init__(self, node: libcst.BinaryOperation, expr: libcst.Expr, variable_name: str) -> None:
         self.node: libcst.BinaryOperation = node
+        self.expr: libcst.Expr = expr
         self.variable_name = libcst.Name(variable_name)
+
+    def leave_Expr(self, original_node: libcst.Expr, updated_node: libcst.Expr) -> libcst.Expr | libcst.RemovalSentinel:
+        if self.expr.deep_equals(original_node):
+            return libcst.RemovalSentinel.REMOVE
+        return updated_node
 
     def leave_BinaryOperation(
         self,
         original_node: libcst.BinaryOperation,
         updated_node: libcst.BinaryOperation,
     ) -> libcst.BinaryOperation | libcst.Name:
-        if self.node.deep_equals(original_node):
+        if self.node.deep_equals(updated_node):
             return self.variable_name
         return updated_node
 
@@ -34,21 +41,27 @@ class ExtractVariableTransformer(libcst.CSTTransformer):
 class ExpressionFinder(libcst.CSTVisitor):
     def __init__(self) -> None:
         super().__init__()
-        self.node: Optional[libcst.BinaryOperation] = None
+        self.node: libcst.BinaryOperation | None = None
+        self.expr: libcst.Expr | None = None
 
     def visit_BinaryOperation(self, node: libcst.BinaryOperation) -> Optional[bool]:
         self.node = node
         return False
 
+    def visit_Expr(self, node: libcst.Expr) -> Optional[bool]:
+        self.expr = node
+        return True
+
 
 def extract_variable(selected_range: Range, source: str) -> str:
     range_tree = libcst.parse_module(get_chars_in_range(selected_range=selected_range, source=source))
+    debug(range_tree)
     visitor = ExpressionFinder()
     range_tree.visit(visitor=visitor)
-    if visitor.node is None:
+    if visitor.node is None or visitor.expr is None:
         raise RuntimeError("Node was unexpectically None!")
 
     source_tree = libcst.parse_module(source=source)
-    extract_transformer = ExtractVariableTransformer(node=visitor.node, variable_name="a")
+    extract_transformer = ExtractVariableTransformer(node=visitor.node, expr=visitor.expr, variable_name="a")
     transformed_tree = source_tree.visit(extract_transformer)
     return transformed_tree.code
