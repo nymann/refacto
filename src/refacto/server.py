@@ -1,74 +1,34 @@
-from typing import Optional
-
+from devtools import debug
 from pygls.lsp.methods import CODE_ACTION
-from pygls.lsp.methods import COMPLETION
 from pygls.lsp.types import CodeAction
 from pygls.lsp.types import CodeActionKind
 from pygls.lsp.types import CodeActionOptions
 from pygls.lsp.types import CodeActionParams
-from pygls.lsp.types import CompletionItem
-from pygls.lsp.types import CompletionList
-from pygls.lsp.types import CompletionOptions
-from pygls.lsp.types import CompletionParams
-from pygls.lsp.types import InsertTextMode
+from pygls.lsp.types.basic_structures import Range
 from pygls.server import LanguageServer
 
 refacto_server = LanguageServer()
 
 
 @refacto_server.feature(
-    COMPLETION,
-    CompletionOptions(
-        trigger_characters=[","],
-        work_done_progress=None,
-        all_commit_characters=None,
-        resolve_provider=None,
-    ),
-)
-def completions(server: LanguageServer, completion_params: CompletionParams) -> CompletionList:
-    server.show_message_log(message="Refacto: Completion")
-    return CompletionList(
-        is_incomplete=False,
-        items=[
-            CompletionItem(
-                additional_text_edits=None,
-                insert_text_mode=InsertTextMode(1),
-                commit_characters=None,
-                data=None,
-                command=None,
-                text_edit=None,
-                insert_text_format=None,
-                insert_text=None,
-                sort_text=None,
-                filter_text=None,
-                label="Item 1",
-                kind=None,
-                documentation=None,
-                deprecated=False,
-                preselect=True,
-                tags=None,
-                detail=None,
-            ),
-        ],
-    )
-
-
-@refacto_server.feature(
     CODE_ACTION,
     CodeActionOptions(
-        code_action_kinds=[CodeActionKind.Refactor],
+        code_action_kinds=[CodeActionKind.RefactorExtract],
         work_done_progress=None,
         resolve_provider=True,
     ),
 )
-def code_action(server: LanguageServer, code_action_params: CodeActionParams) -> Optional[list[CodeAction]]:
+def extract_variable(server: LanguageServer, code_action_params: CodeActionParams) -> list[CodeAction]:
     server.show_message_log(message="Refacto: Code Action")
     document = server.workspace.get_document(code_action_params.text_document.uri)
-    server.show_message(document)
+    doc_path = document.uri.replace(r"file://", "")
+    with open(file=doc_path, mode="r") as code:
+        s = code.readlines()
+    debug(get_chars_in_range(range=code_action_params.range, code=s))
     code_actions = []
     test = CodeAction(
         title="Testing",
-        kind=CodeActionKind.RefactorInline,
+        kind=CodeActionKind.RefactorExtract,
         edit=None,
         diagnostics=None,
         is_preferred=None,
@@ -78,3 +38,15 @@ def code_action(server: LanguageServer, code_action_params: CodeActionParams) ->
     )
     code_actions.append(test)
     return code_actions
+
+
+def get_chars_in_range(range: Range, code: list[str]) -> str:
+    start = range.start
+    end = range.end
+    if start == end:
+        return ""
+    b = code[start.line : end.line + 1]
+    if start.line == end.line:
+        return "".join(b)[start.character : end.character]
+
+    return ""
