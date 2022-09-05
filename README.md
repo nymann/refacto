@@ -2,7 +2,8 @@
 
 A Python3 refactoring Language Server implemented via code-actions, powered by [LibCST](https://github.com/Instagram/LibCST) and [pygls](https://github.com/openlawlibrary/pygls).
 
-<https://user-images.githubusercontent.com/7005867/188315168-6091923e-9ed8-4e64-9536-eb932d021bfa.mp4>
+[refactoring_inline_variable_and_extract_variable_scope.webm](https://user-images.githubusercontent.com/7005867/188514352-137651d0-cce7-4d64-a1ab-eb38eef9141d.webm)
+
 
 ## Installation
 
