@@ -1,15 +1,15 @@
 from collections.abc import Sequence
 
 import libcst as cst
-from libcst.metadata import MetadataWrapper
 from libcst.metadata.scope_provider import ScopeProvider
 from pygls.lsp.types.basic_structures import Range
 
-from refacto.refactoring_transformer import RefactoringTransformer
-from refacto.refactorings.refactoring_utilities import souce_code_in_range
+from refacto.core.refactoring import Refactor
+from refacto.core.refactoring_transformer import RefactoringTransformer
+from refacto.core.refactoring_visitor import RefactoringVisitor
 
 
-class NameFinder(cst.CSTVisitor):
+class NameFinder(RefactoringVisitor):
     def __init__(self) -> None:
         self.name: cst.Name | None = None
 
@@ -64,13 +64,14 @@ class InlineVariableTransformer(RefactoringTransformer):
         return updated_node
 
 
-def inline_variable(selected_range: Range, source: str) -> str:
-    range_tree = cst.parse_module(souce_code_in_range(code_range=selected_range, source=source))
-    visitor = NameFinder()
-    range_tree.visit(visitor=visitor)
-    if visitor.name is None:
-        raise RuntimeError("Couldn't find variable to inline :-(")
-    source_tree = MetadataWrapper(cst.parse_module(source=source))
-    extract_transformer = InlineVariableTransformer(name=visitor.name, selected_range=selected_range)
-    transformed_tree = source_tree.visit(extract_transformer)
-    return transformed_tree.code
+class RefactorInlineVariable(Refactor):
+    def __init__(self) -> None:
+        self.visitor: NameFinder = NameFinder()
+
+    def create_transformer(self, selected_range: Range) -> RefactoringTransformer:
+        if self.visitor.name is None:
+            raise RuntimeError("Couldn't find variable to inline :-(")
+        return InlineVariableTransformer(
+            name=self.visitor.name,
+            selected_range=selected_range,
+        )

@@ -1,10 +1,10 @@
 import libcst as cst
-from libcst.metadata import MetadataWrapper
 from libcst.metadata.scope_provider import ScopeProvider
 from pygls.lsp.types.basic_structures import Range
 
-from refacto.refactoring_transformer import RefactoringTransformer
-from refacto.refactorings.refactoring_utilities import souce_code_in_range
+from refacto.core.refactoring import Refactor
+from refacto.core.refactoring_transformer import RefactoringTransformer
+from refacto.core.refactoring_visitor import RefactoringVisitor
 
 
 class ExtractVariableTransformer(RefactoringTransformer):
@@ -79,7 +79,7 @@ class ExtractVariableTransformer(RefactoringTransformer):
         return updated_node
 
 
-class ExpressionFinder(cst.CSTVisitor):
+class ExpressionFinder(RefactoringVisitor):
     def __init__(self) -> None:
         super().__init__()
         self.expr: cst.Expr | None = None
@@ -89,18 +89,15 @@ class ExpressionFinder(cst.CSTVisitor):
         return False
 
 
-def extract_variable(selected_range: Range, source: str) -> str:
-    range_tree = cst.parse_module(souce_code_in_range(code_range=selected_range, source=source))
-    visitor = ExpressionFinder()
-    range_tree.visit(visitor=visitor)
-    if visitor.expr is None:
-        raise RuntimeError("Node was unexpectically None!")
+class RefactorExtractVariable(Refactor):
+    def __init__(self) -> None:
+        self.visitor: ExpressionFinder = ExpressionFinder()
 
-    source_tree = MetadataWrapper(cst.parse_module(source=source))
-    extract_transformer = ExtractVariableTransformer(
-        expr=visitor.expr,
-        variable_name="a",
-        selected_range=selected_range,
-    )
-    transformed_tree = source_tree.visit(extract_transformer)
-    return transformed_tree.code
+    def create_transformer(self, selected_range: Range) -> RefactoringTransformer:
+        if self.visitor.expr is None:
+            raise RuntimeError("Node was unexpectically None!")
+        return ExtractVariableTransformer(
+            expr=self.visitor.expr,
+            variable_name="a",
+            selected_range=selected_range,
+        )
