@@ -3,7 +3,7 @@ from typing import Optional
 import libcst
 from pygls.lsp.types.basic_structures import Range
 
-from refacto.refactorings.refactoring_utilities import get_chars_in_range
+from refacto.refactorings.refactoring_utilities import get_selected_range_source_code
 
 
 class ExtractVariableTransformer(libcst.CSTTransformer):
@@ -70,7 +70,7 @@ class ExpressionFinder(libcst.CSTVisitor):
 
 
 def extract_variable(selected_range: Range, source: str) -> str:
-    range_tree = libcst.parse_module(get_chars_in_range(selected_range=selected_range, source=source))
+    range_tree = libcst.parse_module(get_selected_range_source_code(selected_range=selected_range, source=source))
     visitor = ExpressionFinder()
     range_tree.visit(visitor=visitor)
     if visitor.expr is None:
