@@ -4,9 +4,9 @@ from pygls.lsp.types.basic_structures import Range
 from refacto.exceptions import InvalidRangeError
 
 
-def get_selected_range_source_code(selected_range: Range, source: str) -> str:
-    start: Position = selected_range.start
-    end: Position = selected_range.end
+def souce_code_in_range(code_range: Range, source: str) -> str:
+    start: Position = code_range.start
+    end: Position = code_range.end
     if start == end:
         raise InvalidRangeError("Single character range select, is not supported")
     lines = source.splitlines()[start.line : end.line + 1]
