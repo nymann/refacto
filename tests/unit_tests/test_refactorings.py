@@ -1,15 +1,12 @@
-from difflib import context_diff
+import sys
 
-from devtools import debug
 import pytest
 
 from tests.unit_tests.collector import TestCase
-from tests.unit_tests.collector import collect_test_cases
+from tests.unit_tests.collector import iterate_test_cases
 
 
-@pytest.mark.parametrize("test_case", collect_test_cases())
+@pytest.mark.parametrize("test_case", iterate_test_cases())
 def test_refactorings(test_case: TestCase) -> None:
-    actual = test_case.after.splitlines()
-    expected = test_case.expected.splitlines()
-    debug(context_diff(expected, actual, fromfile="expected.py", tofile="actual.py"))
+    sys.stderr.writelines(test_case.colorized_diff())
     assert test_case.after == test_case.expected
