@@ -1,5 +1,3 @@
-from typing import Optional
-
 import libcst
 from pygls.lsp.types.basic_structures import Range
 
@@ -72,7 +70,7 @@ class ExpressionFinder(libcst.CSTVisitor):
         super().__init__()
         self.expr: libcst.Expr | None = None
 
-    def visit_Expr(self, node: libcst.Expr) -> Optional[bool]:
+    def visit_Expr(self, node: libcst.Expr) -> bool:
         self.expr = node
         return False
 
