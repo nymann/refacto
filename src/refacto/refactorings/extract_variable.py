@@ -38,15 +38,23 @@ class ExtractVariableTransformer(libcst.CSTTransformer):
             return libcst.RemovalSentinel.REMOVE
         return updated_node
 
-    def extract_variable_if_applicable(self, updated_node: libcst.CSTNodeT) -> libcst.FlattenSentinel | libcst.CSTNodeT:
+    def extract_variable_if_applicable(
+        self,
+        updated_node: libcst.SimpleStatementLine,
+    ) -> libcst.FlattenSentinel | libcst.SimpleStatementLine:
         if not self.extract_next_statement_line or self.extraced_once:
             return updated_node
         target = libcst.AssignTarget(self.variable_name)
         assigned_variable = libcst.Assign(targets=[target], value=self.expr.value)
-        extracted_statement = libcst.SimpleStatementLine(body=[assigned_variable])
+        extracted_statement = libcst.SimpleStatementLine(
+            body=[assigned_variable],
+            leading_lines=updated_node.leading_lines,
+        )
+        removed_leading_lines = libcst.SimpleStatementLine(body=updated_node.body)
         self.extract_next_statement_line = False
         self.extraced_once = True
-        return libcst.FlattenSentinel([extracted_statement, updated_node])
+
+        return libcst.FlattenSentinel([extracted_statement, removed_leading_lines])
 
     def replace_with_variable_if_applicable(
         self,
