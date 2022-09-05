@@ -1,9 +1,11 @@
 from collections.abc import Iterator
 from difflib import unified_diff
 from pathlib import Path
-from typing import Callable, Iterable
+from typing import Iterable
 
 from pygls.lsp.types.basic_structures import Range
+
+from refacto.core.refactoring import Refactor
 
 
 def read_file(path: Path | str) -> str:
@@ -23,18 +25,18 @@ class TestCase:
         before: Path | str,
         expected: Path | str,
         selected_range: Range,
-        refactoring_method: Callable[[Range, str], str],
+        refactoring_method: Refactor,
         selected_code: str,
     ) -> None:
         self.selected_range = selected_range
         self.before = read_file(path=before)
         self.expected = read_file(path=expected)
-        self.refactoring_method = refactoring_method
+        self.refactor_class = refactoring_method
         self.selected_code = selected_code
 
     @property
     def after(self) -> str:
-        return self.refactoring_method(self.selected_range, self.before)
+        return self.refactor_class.refactor(self.selected_range, self.before)
 
     def diff(self) -> Iterator[str]:
         return unified_diff(

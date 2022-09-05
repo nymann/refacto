@@ -2,7 +2,7 @@ import sys
 
 import pytest
 
-from refacto.refactorings.refactoring_utilities import souce_code_in_range
+from refacto.core.refactoring import Refactor
 from tests.unit_tests.collector import iterate_test_cases
 from tests.unit_tests.test_case import TestCase
 
@@ -15,5 +15,8 @@ def test_refactorings(test_case: TestCase) -> None:
 
 @pytest.mark.parametrize("test_case", iterate_test_cases())
 def test_selected_code(test_case: TestCase) -> None:
-    actual: str = souce_code_in_range(code_range=test_case.selected_range, source=test_case.before)
+    actual: str = Refactor.selected_code(
+        selected_range=test_case.selected_range,
+        source=test_case.before,
+    )
     assert actual == test_case.selected_code

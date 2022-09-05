@@ -1,33 +1,31 @@
-from typing import Callable
-
 from pygls.lsp.types import CodeAction
 from pygls.lsp.types import CodeActionKind
 from pygls.lsp.types import CodeActionParams
-from pygls.lsp.types.basic_structures import Range
 from pygls.lsp.types.basic_structures import TextEdit
 from pygls.lsp.types.basic_structures import WorkspaceEdit
 from pygls.workspace import Document
 
+from refacto.core.refactoring import Refactor
 from refacto.lsp_utilities import lsp_text_edits
-from refacto.refactorings.extract_variable import extract_variable
-from refacto.refactorings.inline_variable import inline_variable
+from refacto.refactorings.extract_variable import RefactorExtractVariable
+from refacto.refactorings.inline_variable import RefactorInlineVariable
 
 
 class RefactoringService:
     def __init__(self) -> None:
-        self.refactoring_methods_by_title: dict[str, Callable[[Range, str], str]] = {
-            "Extract Variable": extract_variable,
-            "Inline Variable": inline_variable,
+        self.refactoring_methods_by_title: dict[str, Refactor] = {
+            "Extract Variable": RefactorExtractVariable(),
+            "Inline Variable": RefactorInlineVariable(),
         }
 
     def get_available_refactorings(self, document: Document, code_action_params: CodeActionParams) -> list[CodeAction]:
         code_actions: list[CodeAction] = []
-        for title, refactoring_method in self.refactoring_methods_by_title.items():
+        for title, klass in self.refactoring_methods_by_title.items():
             code_actions.append(
                 self._get_workspace_edit(
                     document=document,
                     title=title,
-                    new_code=refactoring_method(code_action_params.range, document.source),
+                    new_code=klass.refactor(code_action_params.range, document.source),
                 ),
             )
 

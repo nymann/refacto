@@ -1,27 +1,28 @@
 from collections.abc import Iterable
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Callable
+from typing import Any
 
 from pygls.lsp.types.basic_structures import Range
 import pytest
 
-from refacto.refactorings.extract_variable import extract_variable
-from refacto.refactorings.inline_variable import inline_variable
+from refacto.core.refactoring import Refactor
+from refacto.refactorings.extract_variable import RefactorExtractVariable
+from refacto.refactorings.inline_variable import RefactorInlineVariable
 from tests.unit_tests.test_case import TestCase
 
 root_test_cases_directory = Path("tests/test_cases")
 
-refactoring_methods: dict[str, Callable[[Range, str], str]] = {
-    "extract_variable": extract_variable,
-    "inline_variable": inline_variable,
+refactoring_methods: dict[str, Refactor] = {
+    "extract_variable": RefactorExtractVariable(),
+    "inline_variable": RefactorInlineVariable(),
 }
 
 
 @dataclass
 class TestCaseBuilder:
     test_case_dir: Path
-    refactoring_method: Callable[[Range, str], str]
+    refactor_class: Refactor
 
     @property
     def before(self) -> Path:
@@ -48,7 +49,7 @@ class TestCaseBuilder:
             before=self.before,
             expected=self.after,
             selected_range=self.selected_range,
-            refactoring_method=self.refactoring_method,
+            refactoring_method=self.refactor_class,
             selected_code=self.selected_code,
         )
 
@@ -71,7 +72,7 @@ def iterate_test_cases() -> Iterable[Any]:
         refactoring_method_name = refactoring_method_dir.name
         refactoring_method = refactoring_methods[refactoring_method_name]
         for test_case_dir in child_directories(refactoring_method_dir):
-            builder = TestCaseBuilder(test_case_dir=test_case_dir, refactoring_method=refactoring_method)
+            builder = TestCaseBuilder(test_case_dir=test_case_dir, refactor_class=refactoring_method)
             test_name = builder.test_case_dir.name
             test_id = f"{refactoring_method_name}_{test_name}"
             yield pytest.param(builder.test_case(), id=test_id)
