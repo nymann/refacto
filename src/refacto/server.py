@@ -20,7 +20,7 @@ refacto_server = RefactoLanguageServer()
 @refacto_server.feature(
     CODE_ACTION,
     CodeActionOptions(
-        code_action_kinds=[CodeActionKind.RefactorExtract],
+        code_action_kinds=[CodeActionKind.Refactor],
         work_done_progress=None,
         resolve_provider=True,
     ),
