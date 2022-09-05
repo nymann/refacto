@@ -24,15 +24,17 @@ class TestCase:
         expected: Path | str,
         selected_range: Range,
         refactoring_method: Callable[[Range, str], str],
+        selected_code: str,
     ) -> None:
-        self.range = selected_range
-        self.before: str = read_file(path=before)
-        self.expected: str = read_file(path=expected)
+        self.selected_range = selected_range
+        self.before = read_file(path=before)
+        self.expected = read_file(path=expected)
         self.refactoring_method = refactoring_method
+        self.selected_code = selected_code
 
     @property
     def after(self) -> str:
-        return self.refactoring_method(self.range, self.before)
+        return self.refactoring_method(self.selected_range, self.before)
 
     def diff(self) -> Iterator[str]:
         return unified_diff(

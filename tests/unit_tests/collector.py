@@ -31,11 +31,15 @@ class TestCaseBuilder:
 
     @property
     def selected_range(self) -> Range:
-        selected_range: dict[str, Range] = {}
-        range_path = self.test_case_dir.joinpath("range.py")
-        with open(range_path) as range_file:
-            exec(range_file.read(), selected_range)
-        return selected_range["range"]
+        selected_range = self._get_params("selected_range")
+        assert isinstance(selected_range, Range)
+        return selected_range
+
+    @property
+    def selected_code(self) -> str:
+        selected_code = self._get_params("selected_code")
+        assert isinstance(selected_code, str)
+        return selected_code
 
     def test_case(self) -> TestCase:
         return TestCase(
@@ -43,7 +47,15 @@ class TestCaseBuilder:
             expected=self.after,
             selected_range=self.selected_range,
             refactoring_method=self.refactoring_method,
+            selected_code=self.selected_code,
         )
+
+    def _get_params(self, key: str) -> Range | str:
+        parameters: dict[str, Range | str] = {}
+        paramters_path = self.test_case_dir.joinpath("parameters.py")
+        with open(paramters_path) as parameters_file:
+            exec(parameters_file.read(), parameters)
+        return parameters[key]
 
 
 def child_directories(root_dir: Path) -> Iterable[Path]:
