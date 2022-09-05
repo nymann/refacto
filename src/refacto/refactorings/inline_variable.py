@@ -1,11 +1,11 @@
 from collections.abc import Sequence
 
 import libcst as cst
-from libcst.metadata import CodeRange
 from libcst.metadata import MetadataWrapper
 from libcst.metadata.position_provider import PositionProvider
 from pygls.lsp.types.basic_structures import Range
 
+from refacto.refactorings.refactoring_utilities import code_ranges_are_equal
 from refacto.refactorings.refactoring_utilities import souce_code_in_range
 
 
@@ -63,12 +63,6 @@ class InlineVariableTransformer(cst.CSTTransformer):
         if self.inline_value and self.name.deep_equals(original_node):
             return self.inline_value
         return updated_node
-
-
-def code_ranges_are_equal(libcst_range: CodeRange, selected_range: Range) -> bool:
-    same_line = selected_range.start.line == libcst_range.start.line - 1
-    same_col = selected_range.start.character == libcst_range.start.column
-    return same_line and same_col
 
 
 def inline_variable(selected_range: Range, source: str) -> str:

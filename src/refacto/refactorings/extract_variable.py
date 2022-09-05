@@ -1,15 +1,26 @@
 import libcst
+from libcst.metadata import MetadataWrapper
+from libcst.metadata.position_provider import PositionProvider
 from pygls.lsp.types.basic_structures import Range
 
+from refacto.refactorings.refactoring_utilities import code_ranges_are_equal
 from refacto.refactorings.refactoring_utilities import souce_code_in_range
 
 
 class ExtractVariableTransformer(libcst.CSTTransformer):
-    def __init__(self, expr: libcst.Expr, variable_name: str) -> None:
+    METADATA_DEPENDENCIES = (PositionProvider,)
+
+    def __init__(
+        self,
+        expr: libcst.Expr,
+        variable_name: str,
+        selected_range: Range,
+    ) -> None:
         self.expr: libcst.Expr = expr
         self.variable_name = libcst.Name(variable_name)
         self.extract_next_statement_line = False
-        self.extraced_once: bool = False
+        self.extraced_once = False
+        self.selected_range = selected_range
 
     def on_leave(  # type: ignore
         self,
@@ -33,7 +44,9 @@ class ExtractVariableTransformer(libcst.CSTTransformer):
         updated_node: libcst.CSTNodeT,
     ) -> libcst.RemovalSentinel | libcst.CSTNodeT:
         if self.expr.deep_equals(original_node):
-            return libcst.RemovalSentinel.REMOVE
+            pos = self.get_metadata(PositionProvider, original_node)
+            if code_ranges_are_equal(pos, self.selected_range):
+                return libcst.RemovalSentinel.REMOVE
         return updated_node
 
     def extract_variable_if_applicable(
@@ -60,8 +73,12 @@ class ExtractVariableTransformer(libcst.CSTTransformer):
         updated_node: libcst.CSTNodeT,
     ) -> libcst.CSTNodeT | libcst.Name:
         if self.expr.value.deep_equals(original_node):
-            self.extract_next_statement_line = True
-            return self.variable_name
+            pos = self.get_metadata(PositionProvider, original_node)
+            if code_ranges_are_equal(pos, self.selected_range):
+                self.extract_next_statement_line = True
+                return self.variable_name
+            if pos.start.line > self.selected_range.start.line + 1:
+                return self.variable_name
         return updated_node
 
 
@@ -82,7 +99,11 @@ def extract_variable(selected_range: Range, source: str) -> str:
     if visitor.expr is None:
         raise RuntimeError("Node was unexpectically None!")
 
-    source_tree = libcst.parse_module(source=source)
-    extract_transformer = ExtractVariableTransformer(expr=visitor.expr, variable_name="a")
+    source_tree = MetadataWrapper(libcst.parse_module(source=source))
+    extract_transformer = ExtractVariableTransformer(
+        expr=visitor.expr,
+        variable_name="a",
+        selected_range=selected_range,
+    )
     transformed_tree = source_tree.visit(extract_transformer)
     return transformed_tree.code
