@@ -42,9 +42,9 @@ class TestCase:
 
     def colorized_diff(self) -> Iterable[str]:
         for line in self.diff():
-            if line.startswith("+"):
+            if line.startswith("-"):
                 yield colorize(line=line, color=31)
-            elif line.startswith("-"):
+            elif line.startswith("+"):
                 yield colorize(line=line, color=32)
             elif line.startswith("^"):
                 yield colorize(line=line, color=33)
