@@ -1,20 +1,13 @@
 import libcst as cst
 from libcst.metadata import MetadataWrapper
-from libcst.metadata.position_provider import PositionProvider
-from libcst.metadata.scope_provider import Scope
 from libcst.metadata.scope_provider import ScopeProvider
 from pygls.lsp.types.basic_structures import Range
 
-from refacto.refactorings.refactoring_utilities import code_ranges_are_equal
+from refacto.refactoring_transformer import RefactoringTransformer
 from refacto.refactorings.refactoring_utilities import souce_code_in_range
 
 
-class ExtractVariableTransformer(cst.CSTTransformer):
-    METADATA_DEPENDENCIES = (
-        PositionProvider,
-        ScopeProvider,
-    )
-
+class ExtractVariableTransformer(RefactoringTransformer):
     def __init__(
         self,
         expr: cst.Expr,
@@ -25,8 +18,7 @@ class ExtractVariableTransformer(cst.CSTTransformer):
         self.variable_name = cst.Name(variable_name)
         self.extract_next_statement_line = False
         self.extraced_once = False
-        self.selected_range = selected_range
-        self.scope: Scope | None = None
+        super().__init__(selected_range=selected_range)
 
     def on_leave(  # type: ignore
         self,
@@ -50,8 +42,7 @@ class ExtractVariableTransformer(cst.CSTTransformer):
         updated_node: cst.CSTNodeT,
     ) -> cst.RemovalSentinel | cst.CSTNodeT:
         if self.expr.deep_equals(original_node):
-            pos = self.get_metadata(PositionProvider, original_node)
-            if code_ranges_are_equal(pos, self.selected_range):
+            if self.is_same_position(node=original_node):
                 return cst.RemovalSentinel.REMOVE
         return updated_node
 
@@ -79,15 +70,11 @@ class ExtractVariableTransformer(cst.CSTTransformer):
         updated_node: cst.CSTNodeT,
     ) -> cst.CSTNodeT | cst.Name:
         if self.expr.value.deep_equals(original_node):
-            pos = self.get_metadata(PositionProvider, original_node)
-            scope = self.get_metadata(ScopeProvider, original_node)
-            if code_ranges_are_equal(pos, self.selected_range):
+            if self.is_same_position(node=original_node):
                 self.extract_next_statement_line = True
-                self.scope = scope
+                self.scope = self.get_metadata(ScopeProvider, original_node)
                 return self.variable_name
-            if scope is not None and scope == self.scope:
-                return self.variable_name
-            if self.scope is not None and scope is not None and scope.parent == self.scope:
+            if self.is_descendant(node=original_node):
                 return self.variable_name
         return updated_node
 
