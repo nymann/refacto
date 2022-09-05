@@ -13,35 +13,32 @@ class ExtractVariableTransformer(libcst.CSTTransformer):
         self.extract_next_statement_line = False
         self.extraced_once: bool = False
 
-    def leave_Expr(self, original_node: libcst.Expr, updated_node: libcst.Expr) -> libcst.Expr | libcst.RemovalSentinel:
+    def on_leave(  # type: ignore
+        self,
+        original_node: libcst.CSTNodeT,
+        updated_node: libcst.CSTNodeT,
+    ) -> libcst.CSTNodeT | libcst.RemovalSentinel | libcst.FlattenSentinel[libcst.CSTNodeT] | libcst.Name:
+        if isinstance(original_node, libcst.Expr):
+            return self.handle_extract_entire_line_edge_case(original_node=original_node, updated_node=updated_node)
+
+        if isinstance(original_node, libcst.SimpleStatementLine):
+            return self.extract_variable_if_applicable(updated_node=updated_node)
+
+        return self.replace_with_variable_if_applicable(
+            original_node=original_node,
+            updated_node=updated_node,
+        )
+
+    def handle_extract_entire_line_edge_case(
+        self,
+        original_node: libcst.CSTNodeT,
+        updated_node: libcst.CSTNodeT,
+    ) -> libcst.RemovalSentinel | libcst.CSTNodeT:
         if self.expr.deep_equals(original_node):
             return libcst.RemovalSentinel.REMOVE
         return updated_node
 
-    def leave_Call(self, original_node: libcst.Call, updated_node: libcst.Call) -> libcst.Call | libcst.Name:
-        if self.expr.value.deep_equals(original_node):
-            self.extract_next_statement_line = True
-            return self.variable_name
-        return updated_node
-
-    def visit_Call(self, node: libcst.Call) -> bool:
-        return not self.expr.value.deep_equals(node)
-
-    def leave_BinaryOperation(
-        self,
-        original_node: libcst.BinaryOperation,
-        updated_node: libcst.BinaryOperation,
-    ) -> libcst.BinaryOperation | libcst.Name:
-        if self.expr.value.deep_equals(original_node):
-            self.extract_next_statement_line = True
-            return self.variable_name
-        return updated_node
-
-    def leave_SimpleStatementLine(
-        self,
-        original_node: libcst.SimpleStatementLine,
-        updated_node: libcst.SimpleStatementLine,
-    ) -> libcst.FlattenSentinel | libcst.SimpleStatementLine:
+    def extract_variable_if_applicable(self, updated_node: libcst.CSTNodeT) -> libcst.FlattenSentinel | libcst.CSTNodeT:
         if not self.extract_next_statement_line or self.extraced_once:
             return updated_node
         target = libcst.AssignTarget(self.variable_name)
@@ -51,6 +48,16 @@ class ExtractVariableTransformer(libcst.CSTTransformer):
         self.extraced_once = True
         return libcst.FlattenSentinel([extracted_statement, updated_node])
 
+    def replace_with_variable_if_applicable(
+        self,
+        original_node: libcst.CSTNodeT,
+        updated_node: libcst.CSTNodeT,
+    ) -> libcst.CSTNodeT | libcst.Name:
+        if self.expr.value.deep_equals(original_node):
+            self.extract_next_statement_line = True
+            return self.variable_name
+        return updated_node
+
 
 class ExpressionFinder(libcst.CSTVisitor):
     def __init__(self) -> None:
@@ -59,7 +66,7 @@ class ExpressionFinder(libcst.CSTVisitor):
 
     def visit_Expr(self, node: libcst.Expr) -> Optional[bool]:
         self.expr = node
-        return True
+        return False
 
 
 def extract_variable(selected_range: Range, source: str) -> str:

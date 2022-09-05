@@ -2,8 +2,8 @@ import sys
 
 import pytest
 
-from tests.unit_tests.collector import TestCase
 from tests.unit_tests.collector import iterate_test_cases
+from tests.unit_tests.test_case import TestCase
 
 
 @pytest.mark.parametrize("test_case", iterate_test_cases())
