@@ -1,66 +1,60 @@
 from collections.abc import Iterable
+from dataclasses import dataclass
 from pathlib import Path
-from typing import Callable
+from typing import Any, Callable
 
 from pygls.lsp.types.basic_structures import Range
+import pytest
 
 from refacto.refactorings.extract_variable import extract_variable
+from tests.unit_tests.test_case import TestCase
 
 root_test_cases_directory = Path("tests/test_cases")
 
-refactorin_methods: dict[str, Callable[[Range, str], str]] = {
+refactoring_methods: dict[str, Callable[[Range, str], str]] = {
     "extract_variable": extract_variable,
 }
 
 
-class TestCase:
-    __test__ = False
-
-    def __init__(
-        self,
-        before: Path | str,
-        expected: Path | str,
-        selected_range: Range,
-        refactoring_method: Callable[[Range, str], str],
-    ) -> None:
-        self.range = selected_range
-        self.before: str = self.read_file(path=before)
-        self.expected: str = self.read_file(path=expected)
-        self.refactoring_method = refactoring_method
-
-    @staticmethod
-    def read_file(path: Path | str) -> str:
-        with open(file=path, mode="r") as file_to_read:
-            return file_to_read.read()
+@dataclass
+class TestCaseBuilder:
+    test_case_dir: Path
+    refactoring_method: Callable[[Range, str], str]
 
     @property
-    def after(self) -> str:
-        return self.refactoring_method(self.range, self.before)
+    def before(self) -> Path:
+        return self.test_case_dir.joinpath("before.py")
+
+    @property
+    def after(self) -> Path:
+        return self.test_case_dir.joinpath("after.py")
+
+    @property
+    def selected_range(self) -> Range:
+        selected_range: dict[str, Range] = {}
+        range_path = self.test_case_dir.joinpath("range.py")
+        with open(range_path) as range_file:
+            exec(range_file.read(), selected_range)
+        return selected_range["range"]
+
+    def test_case(self) -> TestCase:
+        return TestCase(
+            before=self.before,
+            expected=self.after,
+            selected_range=self.selected_range,
+            refactoring_method=self.refactoring_method,
+        )
 
 
-def collect_test_cases() -> Iterable[TestCase]:  # noqa: WPS231
-    test_cases: list[TestCase] = []
-    for refactoring_method_dir in root_test_cases_directory.iterdir():
-        if not refactoring_method_dir.is_dir():
-            continue
-        for test_case_dir in refactoring_method_dir.iterdir():
-            if not test_case_dir.is_dir():
-                continue
-            if test_case_dir.name == "module_method":
-                continue
-            before = test_case_dir.joinpath("before.py")
-            after = test_case_dir.joinpath("after.py")
-            selected_range: dict[str, Range] = {}
-            range_path = test_case_dir.joinpath("range.py")
-            with open(range_path) as range_file:
-                exec(range_file.read(), selected_range)
-            refactoring_method = refactorin_methods[refactoring_method_dir.name]
-            test_cases.append(
-                TestCase(
-                    before=before,
-                    expected=after,
-                    selected_range=selected_range["range"],
-                    refactoring_method=refactoring_method,
-                ),
-            )
-    return test_cases
+def child_directories(root_dir: Path) -> Iterable[Path]:
+    for child_file in root_dir.iterdir():
+        if child_file.is_dir():
+            yield child_file
+
+
+def iterate_test_cases() -> Iterable[Any]:
+    for refactoring_method_dir in child_directories(root_test_cases_directory):
+        refactoring_method = refactoring_methods[refactoring_method_dir.name]
+        for test_case_dir in child_directories(refactoring_method_dir):
+            builder = TestCaseBuilder(test_case_dir=test_case_dir, refactoring_method=refactoring_method)
+            yield pytest.param(builder.test_case(), id=builder.test_case_dir.name)
