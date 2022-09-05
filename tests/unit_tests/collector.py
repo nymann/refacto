@@ -7,12 +7,14 @@ from pygls.lsp.types.basic_structures import Range
 import pytest
 
 from refacto.refactorings.extract_variable import extract_variable
+from refacto.refactorings.inline_variable import inline_variable
 from tests.unit_tests.test_case import TestCase
 
 root_test_cases_directory = Path("tests/test_cases")
 
 refactoring_methods: dict[str, Callable[[Range, str], str]] = {
     "extract_variable": extract_variable,
+    "inline_variable": inline_variable,
 }
 
 
@@ -66,7 +68,10 @@ def child_directories(root_dir: Path) -> Iterable[Path]:
 
 def iterate_test_cases() -> Iterable[Any]:
     for refactoring_method_dir in child_directories(root_test_cases_directory):
-        refactoring_method = refactoring_methods[refactoring_method_dir.name]
+        refactoring_method_name = refactoring_method_dir.name
+        refactoring_method = refactoring_methods[refactoring_method_name]
         for test_case_dir in child_directories(refactoring_method_dir):
             builder = TestCaseBuilder(test_case_dir=test_case_dir, refactoring_method=refactoring_method)
-            yield pytest.param(builder.test_case(), id=builder.test_case_dir.name)
+            test_name = builder.test_case_dir.name
+            test_id = f"{refactoring_method_name}_{test_name}"
+            yield pytest.param(builder.test_case(), id=test_id)

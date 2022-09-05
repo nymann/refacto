@@ -10,12 +10,14 @@ from pygls.workspace import Document
 
 from refacto.lsp_utilities import lsp_text_edits
 from refacto.refactorings.extract_variable import extract_variable
+from refacto.refactorings.inline_variable import inline_variable
 
 
 class RefactoringService:
     def __init__(self) -> None:
         self.refactoring_methods_by_title: dict[str, Callable[[Range, str], str]] = {
             "Extract Variable": extract_variable,
+            "Inline Variable": inline_variable,
         }
 
     def get_available_refactorings(self, document: Document, code_action_params: CodeActionParams) -> list[CodeAction]:
@@ -36,7 +38,7 @@ class RefactoringService:
         edit = WorkspaceEdit(changes={document.uri: text_edits}, document_changes=None, change_annotations=None)
         return CodeAction(
             title=title,
-            kind=CodeActionKind.RefactorExtract,
+            kind=CodeActionKind.Refactor,
             edit=edit,
             diagnostics=None,
             is_preferred=None,
