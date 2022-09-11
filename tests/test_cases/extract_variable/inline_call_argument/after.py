@@ -14,5 +14,5 @@ def price(order: Order) -> float:
     return base_price - quantity_discount + shipping_cost
 
 
-a = [Order(quantity=3, item_price=2.5)]
-print(sum(price(order=order) for order in a))
+rename_me = [Order(quantity=3, item_price=2.5)]
+print(sum(price(order=order) for order in rename_me))

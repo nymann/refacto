@@ -1,3 +1,3 @@
 def p():
-    a = 1 + 2
-    return a - 3
+    rename_me = 1 + 2
+    return rename_me - 3

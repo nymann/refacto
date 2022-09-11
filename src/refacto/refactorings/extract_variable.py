@@ -98,6 +98,6 @@ class RefactorExtractVariable(Refactor):
             raise RuntimeError("Node was unexpectically None!")
         return ExtractVariableTransformer(
             expr=self.visitor.expr,
-            variable_name="a",
+            variable_name="rename_me",
             selected_range=selected_range,
         )

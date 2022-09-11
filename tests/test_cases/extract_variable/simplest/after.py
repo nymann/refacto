@@ -1,2 +1,2 @@
-a = 1 + 2
-a - 3
+rename_me = 1 + 2
+rename_me - 3
