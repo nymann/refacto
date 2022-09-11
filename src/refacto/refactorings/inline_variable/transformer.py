@@ -28,11 +28,6 @@ class InlineVariableTransformer(RefactoringTransformer):
                 return False
         return True
 
-    def _is_correct_target(self, target: cst.AssignTarget) -> bool:
-        if not target.target.deep_equals(self.name):
-            return False
-        return self.is_same_position(node=target.target)
-
     def leave_SimpleStatementLine(
         self,
         original_node: cst.SimpleStatementLine,
@@ -55,3 +50,8 @@ class InlineVariableTransformer(RefactoringTransformer):
             if self.is_descendant(node=original_node):
                 return self.inline_value
         return updated_node
+
+    def _is_correct_target(self, target: cst.AssignTarget) -> bool:
+        if not target.target.deep_equals(self.name):
+            return False
+        return self.is_same_position(node=target.target)
