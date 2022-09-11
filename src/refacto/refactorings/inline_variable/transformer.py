@@ -16,18 +16,22 @@ class InlineVariableTransformer(RefactoringTransformer):
         self.leading_lines: Sequence[cst.EmptyLine] = []
         super().__init__(selected_range=selected_range)
 
-    def leave_Assign(
+    def visit_Assign(
         self,
-        original_node: cst.Assign,
-        updated_node: cst.Assign,
-    ) -> cst.Assign | cst.RemovalSentinel:
-        for target in original_node.targets:
-            if target.target.deep_equals(self.name):
-                if self.is_same_position(node=target.target):
-                    self.scope = self.get_metadata(ScopeProvider, target.target)
-                    self.inline_value = original_node.value
-                    self.removed_assignment = True
-        return updated_node
+        node: cst.Assign,
+    ) -> bool:
+        for target in node.targets:
+            if self._is_correct_target(target=target):
+                self.scope = self.get_metadata(ScopeProvider, target.target)
+                self.inline_value = node.value
+                self.removed_assignment = True
+                return False
+        return True
+
+    def _is_correct_target(self, target: cst.AssignTarget) -> bool:
+        if not target.target.deep_equals(self.name):
+            return False
+        return self.is_same_position(node=target.target)
 
     def leave_SimpleStatementLine(
         self,
