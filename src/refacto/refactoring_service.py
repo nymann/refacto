@@ -7,7 +7,7 @@ from pygls.workspace import Document
 
 from refacto.core.refactoring import Refactor
 from refacto.lsp_utilities import lsp_text_edits
-from refacto.refactorings.extract_variable import RefactorExtractVariable
+from refacto.refactorings.extract_variable.refactor import RefactorExtractVariable
 from refacto.refactorings.inline_variable import RefactorInlineVariable
 
 
