@@ -21,10 +21,7 @@ class RefactoringService:
     def get_available_refactorings(self, document: Document, code_action_params: CodeActionParams) -> list[CodeAction]:
         code_actions: list[CodeAction] = []
         for title, klass in self.refactoring_methods_by_title.items():
-            try:
-                new_code = klass.refactor(code_action_params.range, document.source)
-            except Exception:
-                continue
+            new_code = klass.refactor(code_action_params.range, document.source)
             if new_code == document.source:
                 continue
             code_actions.append(
