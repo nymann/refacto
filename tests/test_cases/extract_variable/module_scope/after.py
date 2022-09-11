@@ -1,6 +1,7 @@
 c = 1 + 2
 b = 3 + 4
-a = b + c
+rename_me = b + c
+
 
 def p():
-    return a
+    return rename_me

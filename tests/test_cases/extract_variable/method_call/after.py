@@ -3,5 +3,5 @@ def add(b: int, c: int) -> int:
 
 
 def example() -> int:
-    a = add(1, 2) + add(3, 4)
-    return a + 4
+    rename_me = add(1, 2) + add(3, 4)
+    return rename_me + 4
