@@ -7,3 +7,5 @@ RUN make install
 FROM nymann/debian-python3:$DEBIAN_VERSION AS production-image
 USER $USERNAME
 COPY --from=compile-image --chown=$USERNAME:$USERNAME "$VENV" "$VENV"
+EXPOSE 8080
+CMD refacto tcp --host=0.0.0.0 --port=8080
