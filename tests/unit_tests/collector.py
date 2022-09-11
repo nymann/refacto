@@ -8,7 +8,7 @@ import pytest
 
 from refacto.core.refactoring import Refactor
 from refacto.refactorings.extract_variable.refactor import RefactorExtractVariable
-from refacto.refactorings.inline_variable import RefactorInlineVariable
+from refacto.refactorings.inline_variable.refactor import RefactorInlineVariable
 from tests.unit_tests.test_case import TestCase
 
 root_test_cases_directory = Path("tests/test_cases")

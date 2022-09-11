@@ -4,18 +4,7 @@ import libcst as cst
 from libcst.metadata.scope_provider import ScopeProvider
 from pygls.lsp.types.basic_structures import Range
 
-from refacto.core.refactoring import Refactor
 from refacto.core.refactoring_transformer import RefactoringTransformer
-from refacto.core.refactoring_visitor import RefactoringVisitor
-
-
-class NameFinder(RefactoringVisitor):
-    def __init__(self) -> None:
-        self.name: cst.Name | None = None
-
-    def visit_Name(self, node: cst.Name) -> bool:
-        self.name = node
-        return False
 
 
 class InlineVariableTransformer(RefactoringTransformer):
@@ -27,18 +16,17 @@ class InlineVariableTransformer(RefactoringTransformer):
         self.leading_lines: Sequence[cst.EmptyLine] = []
         super().__init__(selected_range=selected_range)
 
-    def leave_Assign(
+    def visit_Assign(
         self,
-        original_node: cst.Assign,
-        updated_node: cst.Assign,
-    ) -> cst.Assign | cst.RemovalSentinel:
-        for target in original_node.targets:
-            if target.target.deep_equals(self.name):
-                if self.is_same_position(node=target.target):
-                    self.scope = self.get_metadata(ScopeProvider, target.target)
-                    self.inline_value = original_node.value
-                    self.removed_assignment = True
-        return updated_node
+        node: cst.Assign,
+    ) -> bool:
+        for target in node.targets:
+            if self._is_correct_target(target=target):
+                self.scope = self.get_metadata(ScopeProvider, target.target)
+                self.inline_value = node.value
+                self.removed_assignment = True
+                return False
+        return True
 
     def leave_SimpleStatementLine(
         self,
@@ -63,15 +51,7 @@ class InlineVariableTransformer(RefactoringTransformer):
                 return self.inline_value
         return updated_node
 
-
-class RefactorInlineVariable(Refactor):
-    def __init__(self) -> None:
-        self.visitor: NameFinder = NameFinder()
-
-    def create_transformer(self, selected_range: Range) -> RefactoringTransformer:
-        if self.visitor.name is None:
-            raise RuntimeError("Couldn't find variable to inline :-(")
-        return InlineVariableTransformer(
-            name=self.visitor.name,
-            selected_range=selected_range,
-        )
+    def _is_correct_target(self, target: cst.AssignTarget) -> bool:
+        if not target.target.deep_equals(self.name):
+            return False
+        return self.is_same_position(node=target.target)
