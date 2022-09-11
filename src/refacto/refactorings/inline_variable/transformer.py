@@ -4,18 +4,7 @@ import libcst as cst
 from libcst.metadata.scope_provider import ScopeProvider
 from pygls.lsp.types.basic_structures import Range
 
-from refacto.core.refactoring import Refactor
 from refacto.core.refactoring_transformer import RefactoringTransformer
-from refacto.core.refactoring_visitor import RefactoringVisitor
-
-
-class NameFinder(RefactoringVisitor):
-    def __init__(self) -> None:
-        self.name: cst.Name | None = None
-
-    def visit_Name(self, node: cst.Name) -> bool:
-        self.name = node
-        return False
 
 
 class InlineVariableTransformer(RefactoringTransformer):
@@ -62,16 +51,3 @@ class InlineVariableTransformer(RefactoringTransformer):
             if self.is_descendant(node=original_node):
                 return self.inline_value
         return updated_node
-
-
-class RefactorInlineVariable(Refactor):
-    def __init__(self) -> None:
-        self.visitor: NameFinder = NameFinder()
-
-    def create_transformer(self, selected_range: Range) -> RefactoringTransformer:
-        if self.visitor.name is None:
-            raise RuntimeError("Couldn't find variable to inline :-(")
-        return InlineVariableTransformer(
-            name=self.visitor.name,
-            selected_range=selected_range,
-        )
