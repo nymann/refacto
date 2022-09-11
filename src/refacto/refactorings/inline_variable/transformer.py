@@ -4,7 +4,7 @@ import libcst as cst
 from libcst.metadata.scope_provider import ScopeProvider
 from pygls.lsp.types.basic_structures import Range
 
-from refacto.core.refactoring_transformer import RefactoringTransformer
+from refacto.refactorings.transformer import RefactoringTransformer
 
 
 class InlineVariableTransformer(RefactoringTransformer):

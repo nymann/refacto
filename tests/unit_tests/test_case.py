@@ -5,7 +5,7 @@ from typing import Iterable
 
 from pygls.lsp.types.basic_structures import Range
 
-from refacto.core.refactoring import Refactor
+from refacto.refactorings.refactor import Refactor
 
 
 def read_file(path: Path | str) -> str:

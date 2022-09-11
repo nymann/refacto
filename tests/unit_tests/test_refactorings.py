@@ -2,7 +2,7 @@ import sys
 
 import pytest
 
-from refacto.core.refactoring import Refactor
+from refacto.refactorings.refactor import Refactor
 from tests.unit_tests.collector import iterate_test_cases
 from tests.unit_tests.test_case import TestCase
 

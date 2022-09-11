@@ -1,6 +1,6 @@
 import libcst as cst
 
-from refacto.core.refactoring_visitor import RefactoringVisitor
+from refacto.refactorings.visitor import RefactoringVisitor
 
 
 class NameFinder(RefactoringVisitor):

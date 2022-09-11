@@ -5,9 +5,9 @@ import libcst as cst
 from pygls.lsp.types.basic_structures import Position
 from pygls.lsp.types.basic_structures import Range
 
-from refacto.core.refactoring_transformer import RefactoringTransformer
-from refacto.core.refactoring_visitor import RefactoringVisitor
 from refacto.exceptions import InvalidRangeError
+from refacto.refactorings.transformer import RefactoringTransformer
+from refacto.refactorings.visitor import RefactoringVisitor
 
 
 class Refactor(ABC):

@@ -1,9 +1,9 @@
 from pygls.lsp.types.basic_structures import Range
 
-from refacto.core.refactoring import Refactor
-from refacto.core.refactoring_transformer import RefactoringTransformer
 from refacto.refactorings.extract_variable.transformer import ExtractVariableTransformer
 from refacto.refactorings.extract_variable.visitor import ExpressionFinder
+from refacto.refactorings.refactor import Refactor
+from refacto.refactorings.transformer import RefactoringTransformer
 
 
 class RefactorExtractVariable(Refactor):

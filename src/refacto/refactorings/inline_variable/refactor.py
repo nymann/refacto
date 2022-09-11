@@ -1,9 +1,9 @@
 from pygls.lsp.types.basic_structures import Range
 
-from refacto.core.refactoring import Refactor
-from refacto.core.refactoring_transformer import RefactoringTransformer
 from refacto.refactorings.inline_variable.transformer import InlineVariableTransformer
 from refacto.refactorings.inline_variable.visitor import NameFinder
+from refacto.refactorings.refactor import Refactor
+from refacto.refactorings.transformer import RefactoringTransformer
 
 
 class RefactorInlineVariable(Refactor):

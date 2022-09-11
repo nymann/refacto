@@ -6,9 +6,9 @@ from typing import Any
 from pygls.lsp.types.basic_structures import Range
 import pytest
 
-from refacto.core.refactoring import Refactor
 from refacto.refactorings.extract_variable.refactor import RefactorExtractVariable
 from refacto.refactorings.inline_variable.refactor import RefactorInlineVariable
+from refacto.refactorings.refactor import Refactor
 from tests.unit_tests.test_case import TestCase
 
 root_test_cases_directory = Path("tests/test_cases")
