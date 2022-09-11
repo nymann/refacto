@@ -7,7 +7,7 @@ from pygls.workspace import Document
 
 from refacto.core.refactoring import Refactor
 from refacto.lsp_utilities import lsp_text_edits
-from refacto.refactorings.extract_variable import RefactorExtractVariable
+from refacto.refactorings.extract_variable.refactor import RefactorExtractVariable
 from refacto.refactorings.inline_variable import RefactorInlineVariable
 
 
@@ -21,7 +21,10 @@ class RefactoringService:
     def get_available_refactorings(self, document: Document, code_action_params: CodeActionParams) -> list[CodeAction]:
         code_actions: list[CodeAction] = []
         for title, klass in self.refactoring_methods_by_title.items():
-            new_code = klass.refactor(code_action_params.range, document.source)
+            try:
+                new_code = klass.refactor(code_action_params.range, document.source)
+            except RuntimeError:
+                continue
             if new_code == document.source:
                 continue
             code_actions.append(

@@ -1,7 +1,8 @@
 import libcst as cst
-from libcst.metadata.position_provider import PositionProvider
-from libcst.metadata.scope_provider import Scope
-from libcst.metadata.scope_provider import ScopeProvider
+from libcst.metadata import ParentNodeProvider
+from libcst.metadata import PositionProvider
+from libcst.metadata import Scope
+from libcst.metadata import ScopeProvider
 from pygls.lsp.types.basic_structures import Range
 
 
@@ -9,6 +10,7 @@ class RefactoringTransformer(cst.CSTTransformer):
     METADATA_DEPENDENCIES = (
         PositionProvider,
         ScopeProvider,
+        ParentNodeProvider,
     )
 
     def __init__(self, selected_range: Range) -> None:
