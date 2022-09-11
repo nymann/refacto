@@ -1,4 +1,6 @@
+from devtools import debug
 import libcst as cst
+from libcst.metadata import ParentNodeProvider
 from libcst.metadata.scope_provider import ScopeProvider
 from pygls.lsp.types.basic_structures import Range
 
@@ -16,8 +18,9 @@ class ExtractVariableTransformer(RefactoringTransformer):
     ) -> None:
         self.expr: cst.Expr = expr
         self.variable_name = cst.Name(variable_name)
+        self.extract_variable: cst.If | cst.SimpleStatementLine | None = None
         self.extract_next_statement_line = False
-        self.extraced_once = False
+        self.extracted_once = False
         super().__init__(selected_range=selected_range)
 
     def on_leave(  # type: ignore
@@ -28,8 +31,11 @@ class ExtractVariableTransformer(RefactoringTransformer):
         if isinstance(original_node, cst.Expr):
             return self.handle_extract_entire_line_edge_case(original_node=original_node, updated_node=updated_node)
 
-        if isinstance(original_node, cst.SimpleStatementLine):
-            return self.extract_variable_if_applicable(updated_node=updated_node)
+        if self.extract_variable is not None and original_node.deep_equals(self.extract_variable):
+            if isinstance(original_node, cst.If):
+                return self.extract_variable_if_applicable_in_if(updated_node=updated_node)
+            if isinstance(original_node, cst.SimpleStatementLine):
+                return self.extract_variable_if_applicable(updated_node=updated_node)
 
         return self.replace_with_variable_if_applicable(
             original_node=original_node,
@@ -46,12 +52,31 @@ class ExtractVariableTransformer(RefactoringTransformer):
                 return cst.RemovalSentinel.REMOVE
         return updated_node
 
+    def extract_variable_if_applicable_in_if(
+        self,
+        updated_node: cst.If,
+    ) -> cst.FlattenSentinel | cst.If:
+        debug("hit IF")
+        if not self.extract_next_statement_line:
+            return updated_node
+        target = cst.AssignTarget(self.variable_name)
+        assigned_variable = cst.Assign(targets=[target], value=self.expr.value)
+        extracted_statement = cst.SimpleStatementLine(
+            body=[assigned_variable],
+            leading_lines=updated_node.leading_lines,
+        )
+        self.extract_next_statement_line = False
+        self.extracted_once = True
+
+        return cst.FlattenSentinel([extracted_statement, updated_node])
+
     def extract_variable_if_applicable(
         self,
         updated_node: cst.SimpleStatementLine,
     ) -> cst.FlattenSentinel | cst.SimpleStatementLine:
-        if not self.extract_next_statement_line or self.extraced_once:
+        if not self.extract_next_statement_line or self.extracted_once:
             return updated_node
+        debug("extract statementline")
         target = cst.AssignTarget(self.variable_name)
         assigned_variable = cst.Assign(targets=[target], value=self.expr.value)
         extracted_statement = cst.SimpleStatementLine(
@@ -60,7 +85,7 @@ class ExtractVariableTransformer(RefactoringTransformer):
         )
         removed_leading_lines = cst.SimpleStatementLine(body=updated_node.body)
         self.extract_next_statement_line = False
-        self.extraced_once = True
+        self.extracted_once = True
 
         return cst.FlattenSentinel([extracted_statement, removed_leading_lines])
 
@@ -73,10 +98,20 @@ class ExtractVariableTransformer(RefactoringTransformer):
             if self.is_same_position(node=original_node):
                 self.extract_next_statement_line = True
                 self.scope = self.get_metadata(ScopeProvider, original_node)
+                debug("replace next")
+                self.extract_variable = self.get_parent(node=original_node)
                 return self.variable_name
             if self.is_descendant(node=original_node):
                 return self.variable_name
         return updated_node
+
+    def get_parent(self, node: cst.CSTNode):
+        parent: cst.CSTNode = self.get_metadata(ParentNodeProvider, node)
+        if isinstance(parent, cst.If):
+            return parent
+        if isinstance(parent, cst.SimpleStatementLine):
+            return parent
+        return self.get_parent(node=parent)
 
 
 class ExpressionFinder(RefactoringVisitor):
