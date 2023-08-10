@@ -25,7 +25,10 @@ class ExtractVariableTransformer(RefactoringTransformer):
         updated_node: cst.CSTNodeT,
     ) -> cst.CSTNodeT | cst.RemovalSentinel | cst.FlattenSentinel[cst.CSTNodeT] | cst.Name:
         if isinstance(original_node, cst.Expr):
-            return self.handle_extract_entire_line_edge_case(original_node=original_node, updated_node=updated_node)  # type: ignore
+            return self.handle_extract_entire_line_edge_case(
+                original_node=original_node,
+                updated_node=updated_node,
+            )  # type: ignore
 
         if self.extract_variable and original_node.deep_equals(self.extract_variable):
             return self.extract(updated_node=updated_node)  # type: ignore
@@ -51,9 +54,8 @@ class ExtractVariableTransformer(RefactoringTransformer):
         original_node: cst.CSTNodeT,
         updated_node: cst.CSTNodeT,
     ) -> cst.RemovalSentinel | cst.CSTNodeT:
-        if self.expr.deep_equals(original_node):
-            if self.is_same_position(node=original_node):
-                return cst.RemovalSentinel.REMOVE
+        if self.expr.deep_equals(original_node) and self.is_same_position(node=original_node):
+            return cst.RemovalSentinel.REMOVE
         return updated_node
 
     def replace_with_variable_if_applicable(
