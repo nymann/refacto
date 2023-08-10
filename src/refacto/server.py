@@ -1,8 +1,8 @@
-from pygls.lsp.methods import CODE_ACTION
-from pygls.lsp.types import CodeAction
-from pygls.lsp.types import CodeActionKind
-from pygls.lsp.types import CodeActionOptions
-from pygls.lsp.types import CodeActionParams
+from lsprotocol.types import CodeAction
+from lsprotocol.types import CodeActionKind
+from lsprotocol.types import CodeActionOptions
+from lsprotocol.types import CodeActionParams
+from lsprotocol.types import TEXT_DOCUMENT_CODE_ACTION
 from pygls.server import LanguageServer
 
 from refacto.refactoring_service import RefactoringService
@@ -10,7 +10,7 @@ from refacto.refactoring_service import RefactoringService
 
 class RefactoLanguageServer(LanguageServer):
     def __init__(self) -> None:
-        super().__init__()
+        super().__init__("Refacto", "1.0.0")
         self.service = RefactoringService()
 
 
@@ -18,7 +18,7 @@ refacto_server = RefactoLanguageServer()
 
 
 @refacto_server.feature(
-    CODE_ACTION,
+    TEXT_DOCUMENT_CODE_ACTION,
     CodeActionOptions(
         code_action_kinds=[CodeActionKind.Refactor],
         work_done_progress=None,

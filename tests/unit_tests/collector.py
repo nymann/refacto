@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-from pygls.lsp.types.basic_structures import Range
+from lsprotocol.types import Range
 import pytest
 
 from refacto.refactorings.extract_variable.refactor import RefactorExtractVariable

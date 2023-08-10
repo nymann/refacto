@@ -1,5 +1,5 @@
-from pygls.lsp.types.basic_structures import Position
-from pygls.lsp.types.basic_structures import Range
+from lsprotocol.types import Position
+from lsprotocol.types import Range
 
 selected_range = Range(
     start=Position(line=2, character=0),

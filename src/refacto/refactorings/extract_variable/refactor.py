@@ -1,4 +1,4 @@
-from pygls.lsp.types.basic_structures import Range
+from lsprotocol.types import Range
 
 from refacto.refactorings.extract_variable.transformer import ExtractVariableTransformer
 from refacto.refactorings.extract_variable.visitor import ExpressionFinder

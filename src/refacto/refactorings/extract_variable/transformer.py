@@ -1,7 +1,7 @@
 import libcst as cst
 from libcst.metadata import ParentNodeProvider
 from libcst.metadata.scope_provider import ScopeProvider
-from pygls.lsp.types.basic_structures import Range
+from lsprotocol.types import Range
 
 from refacto.refactorings.extract_variable.extraction_strategies import ExtractionFactory
 from refacto.refactorings.transformer import RefactoringTransformer
@@ -25,10 +25,10 @@ class ExtractVariableTransformer(RefactoringTransformer):
         updated_node: cst.CSTNodeT,
     ) -> cst.CSTNodeT | cst.RemovalSentinel | cst.FlattenSentinel[cst.CSTNodeT] | cst.Name:
         if isinstance(original_node, cst.Expr):
-            return self.handle_extract_entire_line_edge_case(original_node=original_node, updated_node=updated_node)
+            return self.handle_extract_entire_line_edge_case(original_node=original_node, updated_node=updated_node)  # type: ignore
 
         if self.extract_variable and original_node.deep_equals(self.extract_variable):
-            return self.extract(updated_node=updated_node)
+            return self.extract(updated_node=updated_node)  # type: ignore
 
         return self.replace_with_variable_if_applicable(
             original_node=original_node,

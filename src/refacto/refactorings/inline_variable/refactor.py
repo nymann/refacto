@@ -1,4 +1,4 @@
-from pygls.lsp.types.basic_structures import Range
+from lsprotocol.types import Range
 
 from refacto.refactorings.inline_variable.transformer import InlineVariableTransformer
 from refacto.refactorings.inline_variable.visitor import NameFinder

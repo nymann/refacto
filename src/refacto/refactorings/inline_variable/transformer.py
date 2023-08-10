@@ -2,7 +2,7 @@ from collections.abc import Sequence
 
 import libcst as cst
 from libcst.metadata.scope_provider import ScopeProvider
-from pygls.lsp.types.basic_structures import Range
+from lsprotocol.types import Range
 
 from refacto.refactorings.transformer import RefactoringTransformer
 

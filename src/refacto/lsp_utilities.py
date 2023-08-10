@@ -2,9 +2,9 @@ from bisect import bisect_right
 import difflib
 from typing import NamedTuple
 
-from pygls.lsp.types.basic_structures import Position
-from pygls.lsp.types.basic_structures import Range
-from pygls.lsp.types.basic_structures import TextEdit
+from lsprotocol.types import Position
+from lsprotocol.types import Range
+from lsprotocol.types import TextEdit
 
 
 class Opcode(NamedTuple):

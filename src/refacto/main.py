@@ -11,12 +11,12 @@ Port: int = typer.Option(default=DEFAULT_PORT)
 
 @app.command()
 def tcp(host: str = Host, port: int = Port) -> None:
-    refacto_server.start_tcp(host=host, port=port)  # type: ignore
+    refacto_server.start_tcp(host=host, port=port)
 
 
 @app.command()
 def stdio() -> None:
-    refacto_server.start_io()  # type: ignore
+    refacto_server.start_io()
 
 
 if __name__ == "__main__":

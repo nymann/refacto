@@ -2,8 +2,8 @@ from abc import ABC
 from abc import abstractmethod
 
 import libcst as cst
-from pygls.lsp.types.basic_structures import Position
-from pygls.lsp.types.basic_structures import Range
+from lsprotocol.types import Position
+from lsprotocol.types import Range
 
 from refacto.exceptions import InvalidRangeError
 from refacto.refactorings.transformer import RefactoringTransformer

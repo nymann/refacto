@@ -3,7 +3,7 @@ from libcst.metadata import ParentNodeProvider
 from libcst.metadata import PositionProvider
 from libcst.metadata import Scope
 from libcst.metadata import ScopeProvider
-from pygls.lsp.types.basic_structures import Range
+from lsprotocol.types import Range
 
 
 class RefactoringTransformer(cst.CSTTransformer):

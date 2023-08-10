@@ -3,7 +3,7 @@ from difflib import unified_diff
 from pathlib import Path
 from typing import Iterable
 
-from pygls.lsp.types.basic_structures import Range
+from lsprotocol.types import Range
 
 from refacto.refactorings.refactor import Refactor
 

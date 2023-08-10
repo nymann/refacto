@@ -1,8 +1,8 @@
-from pygls.lsp.types import CodeAction
-from pygls.lsp.types import CodeActionKind
-from pygls.lsp.types import CodeActionParams
-from pygls.lsp.types.basic_structures import TextEdit
-from pygls.lsp.types.basic_structures import WorkspaceEdit
+from lsprotocol.types import CodeAction
+from lsprotocol.types import CodeActionKind
+from lsprotocol.types import CodeActionParams
+from lsprotocol.types import TextEdit
+from lsprotocol.types import WorkspaceEdit
 from pygls.workspace import Document
 
 from refacto.lsp_utilities import lsp_text_edits
